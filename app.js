@@ -2,6 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
@@ -11,12 +12,16 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('view engine', 'pug');
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
 app.use(cookieParser());
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: false
+})); 
+
 app.use(express.static(path.join(__dirname, 'public')));
 var enableCORS = function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -55,8 +60,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(3000,function(err,result){
-  console.log("Project successfully diployed on port -3000");
+app.listen(5000,function(err,result){
+  console.log("Project successfully diployed on port -5000");
 });
 
 module.exports = app;

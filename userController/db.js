@@ -8,8 +8,8 @@ var pool  = mysql.createPool({
   //connectionLimit : 10,
   host            : 'localhost',
   user            : 'root',
-  password        : 'root',
-  database        : 'nodeproject'
+  password        : '',
+  database        : 'nodeproject_test'
 });
 pool.getConnection(function(err, conn) {
   conn.query('USE ' + dbconfig.database, function() {

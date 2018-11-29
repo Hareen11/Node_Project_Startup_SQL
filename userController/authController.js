@@ -6,6 +6,9 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const jwtsecret = "Narola123";
 const expiresIn = 86400; // expires in 24 hours
+const Email = require('email-templates');
+const path = require('path');
+const _dir = path.join(__dirname,'../views')
 class authController {
   static async singup(req, res, next) {
     try {
@@ -36,7 +39,7 @@ class authController {
       db.query(
         "SELECT * FROM users WHERE email = ?",
         [req.body.email],
-        function(error, results, fields) {
+        function (error, results, fields) {
           //console.log(error, results, fields);
           if (results.length) {
             res.send({
@@ -68,7 +71,7 @@ class authController {
               html: "<h1> Your rendom password is" + randompassword + "</h1>"
             };
             // send mail with defined transport object
-            smtpTransport.sendMail(mailOptions, function(err, info) {
+            smtpTransport.sendMail(mailOptions, function (err, info) {
               if (err) {
                 console.log(err);
               } else {
@@ -85,7 +88,7 @@ class authController {
               password: md5(randompassword)
             };
 
-            db.query("INSERT INTO users SET ?", newUser, function(
+            db.query("INSERT INTO users SET ?", newUser, function (
               error,
               results,
               fields
@@ -108,15 +111,15 @@ class authController {
     }
   }
 
-  static async signin(req, res, next) {
+  static async signin(req, res) {
     try {
       const userData = Joi.validate(Object.assign(req.params, req.body), {
         email: Joi.string()
           .email()
           .required(),
-        password:Joi.string()
+        password: Joi.string()
           .min(3)
-          .required()      
+          .required()
       });
 
       if (userData.error) {
@@ -125,9 +128,9 @@ class authController {
       }
       db.query(
         'SELECT * FROM users WHERE email = ? AND password = ? AND role = 0',
-        [req.body.email,md5(req.body.password)],
+        [req.body.email, md5(req.body.password)],
         //'SELECT * FROM users WHERE email = '+ req.body.email +' AND password ='+ md5(req.body.password),
-        function(error, results, fields) {
+        function (error, results, fields) {
           console.log(error, results, fields);
           if (results.length) {
             console.log(results.user_id);
@@ -137,8 +140,8 @@ class authController {
 
             res.send({
               success: true,
-              message:"Successfully signin.",
-              accesstoken :authToken             
+              message: "Successfully signin.",
+              accesstoken: authToken
             });
           } else {
             res.send({
@@ -146,15 +149,43 @@ class authController {
               message: "email or password is incorrect"
             });
           }
-          });
+        });
 
-    }catch (error) {
+    } catch (error) {
       console.error(error);
       res.send({ success: false, error });
     }
   }
+  static async testEmail(req, res) {
+    console.log(path.join(_dir, 'emails', 'mars'));
+    var smtpTransport = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: "demo.narolainfotech@gmail.com",
+        pass: "Password123#"
+      }
+    });
+    const email = new Email({
+      message: {
+        from: 'demo.narolainfotech@gmail.com'
+      },
+      // uncomment below to send emails in development/test env:
+      send: true,
+      transport:smtpTransport
+    });
 
-
-
+    email
+      .send({
+        template: path.join(_dir, 'emails', 'mars'),
+        message: {
+          to: 'had.narola@gmail.com'
+        },
+        locals: {
+          name: 'Elon'
+        }
+      })
+      .then(console.log)
+      .catch(console.error);
+  }
 }
 module.exports = authController;
